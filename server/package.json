@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "eslintConfig": {
+    "extends": "@trevorblades"
+  },
+  "devDependencies": {
+    "@trevorblades/eslint-config": "^7.2.7",
+    "eslint": "^8.2.0",
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "apollo-datasource-rest": "^3.4.0",
+    "apollo-server": "^3.5.0",
+    "graphql": "^16.0.1"
+  }
+}
