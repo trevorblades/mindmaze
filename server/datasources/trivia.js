@@ -8,6 +8,7 @@ export default class TrivaAPI extends RESTDataSource {
 
   async getQuestions(params) {
     const response = await this.get('/api.php', params);
+    console.log(params);
     return response.results;
   }
 
