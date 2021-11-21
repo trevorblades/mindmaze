@@ -1,56 +1,90 @@
-import Door, {DoorContext} from './Door';
 import PropTypes from 'prop-types';
+import Question from './Question';
 import React, {useState} from 'react';
 import Room from './Room';
 import {
   Box,
-  ButtonGroup,
-  Center,
+  Button,
   Circle,
+  Modal,
+  ModalOverlay,
   SimpleGrid,
-  Square
+  Square,
+  useDisclosure
 } from '@chakra-ui/react';
 import {Canvas} from '@react-three/fiber';
 
 export default function Maze({maze}) {
+  const {isOpen, onOpen, onClose} = useDisclosure();
   const [position, setPosition] = useState([0]);
+  const [question, setQuestion] = useState(null);
+
   const {cells, seed} = maze;
-  const currentIndex = position[0];
-  const currentCell = cells[position[0]];
+  const [currentIndex, prevIndex] = position;
+  const currentCell = cells[currentIndex];
+
+  const orientation =
+    !Number.isInteger(prevIndex) || currentIndex - prevIndex === 1
+      ? 'right'
+      : prevIndex < currentIndex
+      ? 'bottom'
+      : prevIndex - currentIndex === 1
+      ? 'left'
+      : 'top';
+
+  function addPosition(pos) {
+    setPosition(prev => [pos, ...prev]);
+  }
+
+  function openDoor(cellIndex) {
+    if (!position.includes(cellIndex)) {
+      setQuestion(cellIndex);
+      onOpen();
+    } else {
+      addPosition(cellIndex);
+    }
+  }
+
   return (
     <>
       <Box h="100vh">
         <Canvas shadows>
           <ambientLight />
           <pointLight castShadow position={[10, 10, 10]} />
-          <Room />
+          <Room
+            orientation={orientation}
+            currentCell={currentCell}
+            onDoorClick={openDoor}
+            cells={cells}
+          />
         </Canvas>
       </Box>
-      <Center h="100vh">
-        <DoorContext.Provider
-          value={{
-            cells,
-            seed,
-            position,
-            setPosition
-          }}
+      {Number.isInteger(prevIndex) && (
+        <Button
+          pos="absolute"
+          bottom="4"
+          left="50%"
+          transform="translateX(-50%)"
+          onClick={() => addPosition(prevIndex)}
+          colorScheme="blue"
         >
-          <ButtonGroup key={currentIndex}>
-            {!currentCell.top && (
-              <Door label="top" x={0} y={currentCell.y - 1} />
-            )}
-            {!currentCell.right && (
-              <Door label="right" x={currentCell.x + 1} y={currentCell.y} />
-            )}
-            {!currentCell.bottom && (
-              <Door label="bottom" x={currentCell.x} y={currentCell.y + 1} />
-            )}
-            {!currentCell.left && (
-              <Door label="left" x={currentCell.x - 1} y={currentCell.y} />
-            )}
-          </ButtonGroup>
-        </DoorContext.Provider>
-      </Center>
+          Go back
+        </Button>
+      )}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        {Number.isInteger(question) && (
+          <Question
+            seed={seed}
+            data={cells[question].question}
+            onCorrect={() => {
+              addPosition(question);
+              onClose();
+            }}
+            onClose={onClose}
+          />
+        )}
+      </Modal>
       <SimpleGrid
         columns={Math.sqrt(cells.length)}
         borderWidth="1px"
@@ -71,7 +105,7 @@ export default function Maze({maze}) {
             borderLeftWidth={cell.left && '1px'}
             bg={index === array.length - 1 && 'red.300'}
           >
-            {index === position[0] && <Circle size="3" bg="red.500" />}
+            {index === currentIndex && <Circle size="3" bg="red.500" />}
           </Square>
         ))}
       </SimpleGrid>
