@@ -1,4 +1,4 @@
-import Door, {DoorContext, WALL_HEIGHT, WALL_WIDTH} from './Door';
+import Door, {DOOR_HEIGHT} from './Door';
 import Minimap from './Minimap';
 import PropTypes from 'prop-types';
 import Question from './Question';
@@ -13,6 +13,17 @@ import {
 } from '@chakra-ui/react';
 import {Canvas} from '@react-three/fiber';
 
+const WALL_HEIGHT = 5;
+const WALL_WIDTH = (WALL_HEIGHT * 4) / 3;
+const DOOR_Y = (WALL_HEIGHT - DOOR_HEIGHT) / -2;
+
+const ROOM_ROTATION = {
+  top: 0,
+  right: Math.PI / 2,
+  bottom: Math.PI,
+  left: Math.PI / -2
+};
+
 export default function Maze({maze}) {
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [position, setPosition] = useState([0]);
@@ -20,6 +31,8 @@ export default function Maze({maze}) {
 
   const {cells, seed} = maze;
   const [currentIndex, prevIndex] = position;
+  const currentCell = cells[currentIndex];
+
   const orientation =
     !Number.isInteger(prevIndex) || currentIndex - prevIndex === 1
       ? 'right'
@@ -33,13 +46,37 @@ export default function Maze({maze}) {
     setPosition(prev => [pos, ...prev]);
   }
 
+  function openDoor(getCellIndex) {
+    const cellIndex = cells.findIndex(getCellIndex);
+    if (!position.includes(cellIndex)) {
+      setDoor(cellIndex);
+      onOpen();
+    } else {
+      addPosition(cellIndex);
+    }
+  }
+
   return (
     <>
       <chakra.div h="100vh">
         <Canvas shadows>
-          <ambientLight />
-          <pointLight castShadow position={[10, 10, 10]} />
-          <group>
+          <ambientLight intensity={0.5} />
+          <group rotation={[0, ROOM_ROTATION[orientation], 0]}>
+            <pointLight castShadow position={[10, 10, 10]} intensity={0.5} />
+            <pointLight
+              castShadow
+              position={[-3, 5, -3]}
+              color="purple"
+              intensity={1}
+            />
+            <Plane
+              receiveShadow
+              args={[WALL_WIDTH, WALL_WIDTH]}
+              rotation={[Math.PI / -2, 0, 0]}
+              position={[0, WALL_HEIGHT / -2, 0]}
+            >
+              <meshStandardMaterial color="tan" />
+            </Plane>
             <Plane
               receiveShadow
               args={[WALL_WIDTH, WALL_HEIGHT]}
@@ -47,14 +84,6 @@ export default function Maze({maze}) {
               position={[WALL_WIDTH / -2, 0, 0]}
             >
               <meshStandardMaterial color="green" />
-            </Plane>
-            <Plane
-              receiveShadow
-              args={[WALL_WIDTH, WALL_HEIGHT]}
-              rotation={[Math.PI / -2, 0, 0]}
-              position={[0, WALL_HEIGHT / -2, 0]}
-            >
-              <meshStandardMaterial color="tan" />
             </Plane>
             <Plane
               receiveShadow
@@ -67,15 +96,23 @@ export default function Maze({maze}) {
             <Plane
               receiveShadow
               args={[WALL_WIDTH, WALL_HEIGHT]}
-              position={[0, 0, WALL_HEIGHT / -2]}
+              position={[0, 0, WALL_WIDTH / -2]}
             >
               <meshStandardMaterial color="yellow" />
+            </Plane>
+            <Plane
+              receiveShadow
+              args={[WALL_WIDTH, WALL_HEIGHT]}
+              rotation={[0, Math.PI, 0]}
+              position={[0, 0, WALL_WIDTH / 2]}
+            >
+              <meshStandardMaterial color="blue" />
             </Plane>
             <Box
               castShadow
               receiveShadow
               rotation={[0, Math.PI / 3, 0]}
-              position={[1, WALL_HEIGHT / -2 + 0.5, 0]}
+              position={[1, WALL_HEIGHT / -2 + 0.5, 1]}
               onClick={event => {
                 event.stopPropagation();
                 alert('box');
@@ -83,39 +120,53 @@ export default function Maze({maze}) {
             >
               <meshStandardMaterial color="lightgrey" />
             </Box>
-            <DoorContext.Provider
-              value={{
-                cells,
-                currentCell: cells[currentIndex],
-                orientation,
-                openDoor(cellIndex) {
-                  if (!position.includes(cellIndex)) {
-                    setDoor(cellIndex);
-                    onOpen();
-                  } else {
-                    addPosition(cellIndex);
-                  }
+            {!currentCell.top && orientation !== 'bottom' && (
+              <Door
+                position={[0, DOOR_Y, WALL_WIDTH / -2]}
+                onClick={() =>
+                  openDoor(
+                    cell =>
+                      cell.x === currentCell.x && cell.y === currentCell.y - 1
+                  )
                 }
-              }}
-            >
-              <Door position={[0, WALL_HEIGHT / 3 / -2, WALL_HEIGHT / -2]} />
+              />
+            )}
+            {!currentCell.right && orientation !== 'left' && (
               <Door
-                top="right"
-                right="bottom"
-                bottom="left"
-                left="top"
                 rotation={[0, Math.PI / -2, 0]}
-                position={[WALL_WIDTH / 2, WALL_HEIGHT / 3 / -2, 0]}
+                position={[WALL_WIDTH / 2, DOOR_Y, 0]}
+                onClick={() =>
+                  openDoor(
+                    cell =>
+                      cell.x === currentCell.x + 1 && cell.y === currentCell.y
+                  )
+                }
               />
+            )}
+            {!currentCell.bottom && orientation !== 'top' && (
               <Door
-                top="left"
-                right="top"
-                bottom="right"
-                left="bottom"
-                rotation={[0, Math.PI / 2, 0]}
-                position={[WALL_WIDTH / -2, WALL_HEIGHT / 3 / -2, 0]}
+                rotation={[0, Math.PI, 0]}
+                position={[0, DOOR_Y, WALL_WIDTH / 2]}
+                onClick={() =>
+                  openDoor(
+                    cell =>
+                      cell.x === currentCell.x && cell.y === currentCell.y + 1
+                  )
+                }
               />
-            </DoorContext.Provider>
+            )}
+            {!currentCell.left && orientation !== 'right' && (
+              <Door
+                rotation={[0, Math.PI / 2, 0]}
+                position={[WALL_WIDTH / -2, DOOR_Y, 0]}
+                onClick={() =>
+                  openDoor(
+                    cell =>
+                      cell.x === currentCell.x - 1 && cell.y === currentCell.y
+                  )
+                }
+              />
+            )}
           </group>
         </Canvas>
       </chakra.div>
