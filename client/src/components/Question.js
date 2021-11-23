@@ -12,6 +12,7 @@ import {
   Stack,
   Text
 } from '@chakra-ui/react';
+import {decode} from 'he';
 import {shuffle} from 'shuffle-seed';
 
 export default function Question({seed, data, onCorrect, onClose}) {
@@ -32,7 +33,7 @@ export default function Question({seed, data, onCorrect, onClose}) {
       <ModalHeader>Question</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
-        <Text>{question}</Text>
+        <Text>{decode(question)}</Text>
         <RadioGroup value={selected} onChange={setSelected}>
           <Stack>
             {answers.map((answer, index) => {
@@ -43,7 +44,7 @@ export default function Question({seed, data, onCorrect, onClose}) {
                   key={index}
                   value={value}
                 >
-                  {answer.text}
+                  {decode(answer.text)}
                 </Radio>
               );
             })}

@@ -23,7 +23,7 @@ export default function Door(props) {
         args={[KNOB_RADIUS]}
         position={[DOOR_WIDTH / 3, 0, DOOR_DEPTH + KNOB_RADIUS]}
       >
-        <meshStandardMaterial color="lavender" />
+        <meshStandardMaterial color="hotpink" />
       </Sphere>
     </group>
   );
