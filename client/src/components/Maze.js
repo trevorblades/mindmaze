@@ -234,6 +234,7 @@ export default function Maze({maze}) {
       </Modal>
       <Minimap
         cells={cells}
+        position={position}
         currentIndex={currentIndex}
         orientation={orientation}
       />

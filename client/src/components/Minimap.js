@@ -8,27 +8,29 @@ import {
   FaArrowAltCircleUp
 } from 'react-icons/fa';
 
-export default function Minimap({cells, currentIndex, orientation}) {
+export default function Minimap({cells, position, currentIndex, orientation}) {
+  console.log(position);
   return (
     <SimpleGrid
       columns={Math.sqrt(cells.length)}
-      borderWidth="1px"
-      borderColor="black"
       pos="absolute"
       top="4"
       left="4"
+      spacing="0.5"
+      p="0.5"
       bg="white"
     >
       {cells.map((cell, index, array) => (
         <Square
           key={index}
           size="6"
-          borderColor="black"
-          borderTopWidth={cell.top && '1px'}
-          borderRightWidth={cell.right && '1px'}
-          borderBottomWidth={cell.bottom && '1px'}
-          borderLeftWidth={cell.left && '1px'}
-          bg={index === array.length - 1 && 'red.300'}
+          borderWidth="3px"
+          borderColor={index === array.length - 1 ? 'red.300' : 'black'}
+          borderTopColor={!cell.top && 'transparent'}
+          borderRightColor={!cell.right && 'transparent'}
+          borderBottomColor={!cell.bottom && 'transparent'}
+          borderLeftColor={!cell.left && 'transparent'}
+          bg={!position.includes(index) && 'black'}
         >
           {index === currentIndex && (
             <Box
@@ -52,6 +54,7 @@ export default function Minimap({cells, currentIndex, orientation}) {
 
 Minimap.propTypes = {
   cells: PropTypes.array.isRequired,
+  position: PropTypes.array.isRequired,
   currentIndex: PropTypes.number.isRequired,
   orientation: PropTypes.string.isRequired
 };
