@@ -40,8 +40,10 @@ const resolvers = {
   Query: {
     async maze(_, {size, ...params}, {dataSources}) {
       const seed = Math.round(Date.now() / 1000);
+      const amount = size ** 2 - 1;
+      // TODO: limited to 50, paginate for higher amounts (ie. 8 and greater)
       const questions = await dataSources.triviaAPI.getQuestions({
-        amount: size ** 2 - 1,
+        amount,
         ...params
       });
       return {

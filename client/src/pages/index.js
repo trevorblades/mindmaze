@@ -27,7 +27,7 @@ const GET_MAZE = gql`
 
 export default function HomePage() {
   const [getMaze, {loading, error, data}] = useLazyQuery(GET_MAZE, {
-    variables: {size: 8}
+    variables: {size: 7}
   });
 
   if (data) {
