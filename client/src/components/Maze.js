@@ -1,4 +1,4 @@
-import Door, {DOOR_HEIGHT} from './Door';
+import Door, {DOOR_HEIGHT, DoorContext} from './Door';
 import Minimap from './Minimap';
 import PropTypes from 'prop-types';
 import Question from './Question';
@@ -82,6 +82,7 @@ export default function Maze({maze}) {
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [position, setPosition] = useState([0]);
   const [door, setDoor] = useState(null);
+  const [hovered, setHovered] = useState(false);
 
   const {cells, seed} = maze;
   const [currentIndex, prevIndex] = position;
@@ -112,7 +113,7 @@ export default function Maze({maze}) {
 
   return (
     <>
-      <chakra.div h="100vh">
+      <chakra.div h="100vh" style={{cursor: hovered && 'pointer'}}>
         <Canvas shadows>
           <Suspense fallback={null}>
             <ambientLight intensity={0.4} />
@@ -155,53 +156,50 @@ export default function Maze({maze}) {
                 <meshStandardMaterial color="blue" />
               </Plane>
               <Cube />
-              {!currentCell.top && orientation !== 'bottom' && (
-                <Door
-                  position={[0, DOOR_Y, WALL_WIDTH / -2]}
-                  onClick={() =>
-                    openDoor(
-                      cell =>
-                        cell.x === currentCell.x && cell.y === currentCell.y - 1
-                    )
-                  }
-                />
-              )}
-              {!currentCell.right && orientation !== 'left' && (
-                <Door
-                  rotation={[0, Math.PI / -2, 0]}
-                  position={[WALL_WIDTH / 2, DOOR_Y, 0]}
-                  onClick={() =>
-                    openDoor(
-                      cell =>
-                        cell.x === currentCell.x + 1 && cell.y === currentCell.y
-                    )
-                  }
-                />
-              )}
-              {!currentCell.bottom && orientation !== 'top' && (
-                <Door
-                  rotation={[0, Math.PI, 0]}
-                  position={[0, DOOR_Y, WALL_WIDTH / 2]}
-                  onClick={() =>
-                    openDoor(
-                      cell =>
-                        cell.x === currentCell.x && cell.y === currentCell.y + 1
-                    )
-                  }
-                />
-              )}
-              {!currentCell.left && orientation !== 'right' && (
-                <Door
-                  rotation={[0, Math.PI / 2, 0]}
-                  position={[WALL_WIDTH / -2, DOOR_Y, 0]}
-                  onClick={() =>
-                    openDoor(
-                      cell =>
-                        cell.x === currentCell.x - 1 && cell.y === currentCell.y
-                    )
-                  }
-                />
-              )}
+              <DoorContext.Provider
+                value={{
+                  openDoor,
+                  setHovered
+                }}
+              >
+                {!currentCell.top && orientation !== 'bottom' && (
+                  <Door
+                    position={[0, DOOR_Y, WALL_WIDTH / -2]}
+                    getCellIndex={cell =>
+                      cell.x === currentCell.x && cell.y === currentCell.y - 1
+                    }
+                  />
+                )}
+                {!currentCell.right && orientation !== 'left' && (
+                  <Door
+                    rotation={[0, Math.PI / -2, 0]}
+                    position={[WALL_WIDTH / 2, DOOR_Y, 0]}
+                    getCellIndex={cell =>
+                      cell.x === currentCell.x + 1 && cell.y === currentCell.y
+                    }
+                  />
+                )}
+                {!currentCell.bottom && orientation !== 'top' && (
+                  <Door
+                    rotation={[0, Math.PI, 0]}
+                    position={[0, DOOR_Y, WALL_WIDTH / 2]}
+                    getCellIndex={cell =>
+                      cell.x === currentCell.x && cell.y === currentCell.y + 1
+                    }
+                    onPointerOver={() => setHovered(true)}
+                    onPointerOut={() => setHovered(false)}
+                  />
+                )}
+                {!currentCell.left && orientation !== 'right' && (
+                  <Door
+                    rotation={[0, Math.PI / 2, 0]}
+                    position={[WALL_WIDTH / -2, DOOR_Y, 0]}
+                    getCellIndex={cell =>
+                      cell.x === currentCell.x - 1 && cell.y === currentCell.y
+                    }
+                  />
+                )}
+              </DoorContext.Provider>
             </group>
           </Suspense>
         </Canvas>

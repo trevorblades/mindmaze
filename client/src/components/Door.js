@@ -1,15 +1,24 @@
-import React from 'react';
+import PropTypes from 'prop-types';
+import React, {createContext, useContext} from 'react';
 import {Box, Sphere} from '@react-three/drei';
 
 export const DOOR_HEIGHT = 3;
 const DOOR_WIDTH = DOOR_HEIGHT / 2;
 const DOOR_DEPTH = 0.05;
-
 const KNOB_RADIUS = 0.1;
 
-export default function Door(props) {
+export const DoorContext = createContext();
+
+export default function Door({position, rotation, getCellIndex}) {
+  const {openDoor, setHovered} = useContext(DoorContext);
   return (
-    <group {...props}>
+    <group
+      rotation={rotation}
+      position={position}
+      onClick={() => openDoor(getCellIndex)}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
       <Box
         receiveShadow
         args={[DOOR_WIDTH, DOOR_HEIGHT, DOOR_DEPTH]}
@@ -28,3 +37,9 @@ export default function Door(props) {
     </group>
   );
 }
+
+Door.propTypes = {
+  rotation: PropTypes.array,
+  position: PropTypes.array.isRequired,
+  getCellIndex: PropTypes.func.isRequired
+};

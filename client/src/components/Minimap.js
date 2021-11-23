@@ -9,7 +9,6 @@ import {
 } from 'react-icons/fa';
 
 export default function Minimap({cells, position, currentIndex, orientation}) {
-  console.log(position);
   return (
     <SimpleGrid
       columns={Math.sqrt(cells.length)}
