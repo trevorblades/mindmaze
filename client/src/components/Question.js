@@ -3,7 +3,6 @@ import React, {useState} from 'react';
 import {
   Button,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -15,7 +14,7 @@ import {
 import {decode} from 'he';
 import {shuffle} from 'shuffle-seed';
 
-export default function Question({seed, data, onCorrect, onClose}) {
+export default function Question({seed, data, onCorrect}) {
   const [guesses, setGuesses] = useState([]);
   const [selected, setSelected] = useState('');
 
@@ -31,7 +30,6 @@ export default function Question({seed, data, onCorrect, onClose}) {
   return (
     <ModalContent>
       <ModalHeader>Question</ModalHeader>
-      <ModalCloseButton />
       <ModalBody>
         <Text>{decode(question)}</Text>
         <RadioGroup value={selected} onChange={setSelected}>
@@ -52,9 +50,6 @@ export default function Question({seed, data, onCorrect, onClose}) {
         </RadioGroup>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onClose} mr="2">
-          Cancel
-        </Button>
         <Button
           isDisabled={!selected}
           onClick={() => {
@@ -76,6 +71,5 @@ export default function Question({seed, data, onCorrect, onClose}) {
 Question.propTypes = {
   seed: PropTypes.number.isRequired,
   data: PropTypes.object.isRequired,
-  onCorrect: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired
+  onCorrect: PropTypes.func.isRequired
 };

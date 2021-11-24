@@ -216,7 +216,7 @@ export default function Maze({maze}) {
           Go back
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen}>
         <ModalOverlay />
         {Number.isInteger(door) && (
           <Question
@@ -226,7 +226,6 @@ export default function Maze({maze}) {
               addPosition(door);
               onClose();
             }}
-            onClose={onClose}
           />
         )}
       </Modal>
