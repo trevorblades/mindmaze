@@ -67,6 +67,7 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  introspection: true,
   dataSources: () => ({
     triviaAPI: new TrivaAPI()
   })

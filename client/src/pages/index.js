@@ -1,11 +1,20 @@
 import Maze from '../components/Maze';
 import React from 'react';
-import {Button} from '@chakra-ui/react';
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  HStack,
+  Radio,
+  RadioGroup,
+  Select
+} from '@chakra-ui/react';
 import {gql, useLazyQuery} from '@apollo/client';
+import {graphql, useStaticQuery} from 'gatsby';
 
 const GET_MAZE = gql`
-  query GetMaze($size: Int!) {
-    maze(size: $size) {
+  query GetMaze($size: Int!, $category: ID, $difficulty: String) {
+    maze(size: $size, category: $category, difficulty: $difficulty) {
       seed
       cells {
         x
@@ -26,6 +35,19 @@ const GET_MAZE = gql`
 `;
 
 export default function HomePage() {
+  const {mindmaze} = useStaticQuery(
+    graphql`
+      query ListCategories {
+        mindmaze {
+          categories {
+            id
+            name
+          }
+        }
+      }
+    `
+  );
+
   const [getMaze, {loading, error, data}] = useLazyQuery(GET_MAZE, {
     variables: {size: 7}
   });
@@ -43,8 +65,42 @@ export default function HomePage() {
   }
 
   return (
-    <div>
-      <Button onClick={getMaze}>Start game</Button>
-    </div>
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        const {category, difficulty} = event.target;
+        getMaze({
+          variables: {
+            size: 7,
+            category: category.value || null,
+            difficulty: difficulty.value || null
+          }
+        });
+      }}
+    >
+      <Button type="submit">Start game</Button>
+      <FormControl>
+        <FormLabel>Category</FormLabel>
+        <Select name="category">
+          <option value="">All categories</option>
+          {mindmaze.categories.map(category => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Difficulty</FormLabel>
+        <RadioGroup name="difficulty">
+          <HStack>
+            <Radio value="">All</Radio>
+            <Radio value="easy">Easy</Radio>
+            <Radio value="medium">Medium</Radio>
+            <Radio value="hard">Hard</Radio>
+          </HStack>
+        </RadioGroup>
+      </FormControl>
+    </form>
   );
 }
